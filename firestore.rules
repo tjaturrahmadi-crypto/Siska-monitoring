@@ -1,0 +1,369 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerified() && request.auth.token.email == 'teamgsportsapparel@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (
+        isVerified() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active'
+      );
+    }
+
+    function isActiveUser() {
+      return isBootstrappedAdmin() || (
+        isVerified() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'active'
+      );
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll([
+          'uid', 'email', 'displayName', 'role', 'status', 'provider', 'lastLoginAt', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'uid', 'email', 'displayName', 'role', 'status', 'provider', 'lastLoginAt', 'createdAt'
+        ]) &&
+        (
+          data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+          data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+          data.displayName is string && data.displayName.size() <= 120 &&
+          data.role in ['admin', 'staff']
+        ) && (
+          data.status in ['active', 'disabled'] &&
+          data.provider is string && data.provider.size() <= 40 &&
+          data.lastLoginAt is timestamp &&
+          data.createdAt is timestamp
+        );
+    }
+
+    function hasValidOrderKeys(data) {
+      return data.keys().hasAll([
+          'kategori', 'namaCustomer', 'statusCustomer', 'noInvoice',
+          'tglMasukLayout', 'tglEstimasiSelesai', 'qtyOrder',
+          'bahanAtasan', 'bahanCelana', 'bahanJaket', 'kerah',
+          'jenisLogoTim', 'jmlLogoTim', 'jmlLogoTimCelana',
+          'jenisLogoApparel', 'jmlLogoApparel', 'jmlLogoApparelCelana',
+          'jenisSponsorDepanBelakang', 'jmlSponsorDepanBelakang',
+          'jenisSponsorLengan', 'jmlSponsorLengan',
+          'jenisLogoJaket', 'jmlLogoJaket',
+          'statusPesanLogo', 'tglPesanLogo',
+          'statusDesain', 'revisiKe', 'desainer', 'tglUpdateDesain',
+          'statusProduksi', 'totalNominal', 'dpNominal', 'keteranganRequest',
+          'createdBy', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'orderCode', 'noWa',
+          'kategori', 'paket', 'namaCustomer', 'statusCustomer', 'noInvoice', 'belumInvoice',
+          'tglOrder', 'tglMasukLayout', 'belumLayout', 'tglEstimasiSelesai', 'qtyOrder',
+          'bahanAtasan', 'bahanCelana', 'jenisCelana', 'bahanJaket', 'kerah',
+          'jenisLogoTim', 'jmlLogoTim', 'jenisLogoTimCelana', 'jmlLogoTimCelana',
+          'jenisLogoApparel', 'jmlLogoApparel', 'jenisLogoApparelCelana', 'jmlLogoApparelCelana',
+          'jenisNomorCelana', 'jmlNomorCelana',
+          'jenisSponsorDepanBelakang', 'jmlSponsorDepanBelakang',
+          'jenisSponsorLengan', 'jmlSponsorLengan',
+          'jenisLogoJaket', 'jmlLogoJaket',
+          'pecahPola', 'jmlPecahPola', 'lisPiping', 'jmlLisPiping',
+          'pecahPolaCelana', 'jmlPecahPolaCelana', 'lisPipingCelana', 'jmlLisPipingCelana',
+          'statusPesanLogo', 'tglPesanLogo',
+          'statusDesain', 'revisiKe', 'desainer', 'tglUpdateDesain',
+          'statusProduksi', 'totalNominal', 'dpNominal', 'keteranganRequest',
+          'createdBy', 'createdAt', 'updatedAt'
+        ]);
+    }
+
+    function hasValidOrderOptionalFields(data) {
+      return (
+        (!('orderCode' in data) || (data.orderCode is string && data.orderCode.size() <= 32)) &&
+        (!('noWa' in data) || (data.noWa is string && data.noWa.size() <= 40)) &&
+        (!('paket' in data) || (data.paket is string && data.paket.size() <= 100)) &&
+        (!('belumInvoice' in data) || data.belumInvoice is bool) &&
+        (!('jenisCelana' in data) || data.jenisCelana in ['', 'CELANA PENDEK', 'CELANA PANJANG']) &&
+        (!('tglOrder' in data) || (data.tglOrder is string && data.tglOrder.size() <= 20))
+      ) && (
+        (!('belumLayout' in data) || data.belumLayout is bool) &&
+        (!('jenisLogoTimCelana' in data) || (data.jenisLogoTimCelana is string && data.jenisLogoTimCelana.size() <= 100)) &&
+        (!('jenisLogoApparelCelana' in data) || (data.jenisLogoApparelCelana is string && data.jenisLogoApparelCelana.size() <= 100)) &&
+        (!('jenisNomorCelana' in data) || (data.jenisNomorCelana is string && data.jenisNomorCelana.size() <= 100)) &&
+        (!('jmlNomorCelana' in data) || (data.jmlNomorCelana is number && data.jmlNomorCelana >= 0 && data.jmlNomorCelana <= 10000))
+      ) && (
+        (!('pecahPola' in data) || data.pecahPola in ['ADA', 'TIDAK']) &&
+        (!('jmlPecahPola' in data) || (data.jmlPecahPola is number && data.jmlPecahPola >= 0 && data.jmlPecahPola <= 100000)) &&
+        (!('lisPiping' in data) || data.lisPiping in ['ADA', 'TIDAK']) &&
+        (!('jmlLisPiping' in data) || (data.jmlLisPiping is number && data.jmlLisPiping >= 0 && data.jmlLisPiping <= 100000))
+      ) && (
+        (!('pecahPolaCelana' in data) || data.pecahPolaCelana in ['ADA', 'TIDAK']) &&
+        (!('jmlPecahPolaCelana' in data) || (data.jmlPecahPolaCelana is number && data.jmlPecahPolaCelana >= 0 && data.jmlPecahPolaCelana <= 100000)) &&
+        (!('lisPipingCelana' in data) || data.lisPipingCelana in ['ADA', 'TIDAK']) &&
+        (!('jmlLisPipingCelana' in data) || (data.jmlLisPipingCelana is number && data.jmlLisPipingCelana >= 0 && data.jmlLisPipingCelana <= 100000))
+      );
+    }
+
+    function hasValidOrderCoreSpecs(data) {
+      return (
+        data.kategori in ['SETELAN', 'ATASAN', 'CELANA', 'JAKET'] &&
+        data.namaCustomer is string && data.namaCustomer.size() >= 1 && data.namaCustomer.size() <= 150 &&
+        data.statusCustomer in ['UTAMA', 'TAMBAHAN'] &&
+        data.noInvoice is string && data.noInvoice.size() >= 1 && data.noInvoice.size() <= 80 &&
+        data.tglMasukLayout is string && data.tglMasukLayout.size() <= 20 &&
+        data.tglEstimasiSelesai is string && data.tglEstimasiSelesai.size() <= 20 &&
+        data.qtyOrder is number && data.qtyOrder >= 0 && data.qtyOrder <= 100000
+      ) && (
+        data.bahanAtasan is string && data.bahanAtasan.size() <= 100 &&
+        data.bahanCelana is string && data.bahanCelana.size() <= 100 &&
+        data.bahanJaket is string && data.bahanJaket.size() <= 100 &&
+        data.kerah is string && data.kerah.size() <= 100 &&
+        data.jenisLogoTim is string && data.jenisLogoTim.size() <= 100
+      ) && (
+        data.jmlLogoTim is number && data.jmlLogoTim >= 0 && data.jmlLogoTim <= 10000 &&
+        data.jmlLogoTimCelana is number && data.jmlLogoTimCelana >= 0 && data.jmlLogoTimCelana <= 10000 &&
+        data.jenisLogoApparel is string && data.jenisLogoApparel.size() <= 100 &&
+        data.jmlLogoApparel is number && data.jmlLogoApparel >= 0 && data.jmlLogoApparel <= 10000 &&
+        data.jmlLogoApparelCelana is number && data.jmlLogoApparelCelana >= 0 && data.jmlLogoApparelCelana <= 10000
+      );
+    }
+
+    function hasValidOrderCoreStatus(data) {
+      return (
+        data.jenisSponsorDepanBelakang is string && data.jenisSponsorDepanBelakang.size() <= 120 &&
+        data.jmlSponsorDepanBelakang is number && data.jmlSponsorDepanBelakang >= 0 && data.jmlSponsorDepanBelakang <= 10000 &&
+        data.jenisSponsorLengan is string && data.jenisSponsorLengan.size() <= 120 &&
+        data.jmlSponsorLengan is number && data.jmlSponsorLengan >= 0 && data.jmlSponsorLengan <= 10000 &&
+        data.jenisLogoJaket is string && data.jenisLogoJaket.size() <= 100 &&
+        data.jmlLogoJaket is number && data.jmlLogoJaket >= 0 && data.jmlLogoJaket <= 10000
+      ) && (
+        data.statusPesanLogo in ['BELUM', 'SUDAH'] &&
+        data.tglPesanLogo is string && data.tglPesanLogo.size() <= 20 &&
+        data.statusDesain in ['BELUM DESAIN', 'PROSES DESAIN', 'REVISI', 'DESAIN ACC'] &&
+        data.revisiKe is number && data.revisiKe >= 0 && data.revisiKe <= 10 &&
+        data.desainer is string && data.desainer.size() <= 100 &&
+        data.tglUpdateDesain is string && data.tglUpdateDesain.size() <= 20
+      ) && (
+        data.statusProduksi in ['ANTRIAN', 'PROSES PRODUKSI', 'SUDAH SELESAI', 'BELUM PRODUKSI', 'POTONG / PRINTING', 'JAHIT', 'FINISHING / QC', 'SELESAI'] &&
+        data.totalNominal is number && data.totalNominal >= 0 &&
+        data.dpNominal is number && data.dpNominal >= 0 &&
+        data.keteranganRequest is string && data.keteranganRequest.size() <= 2000 &&
+        data.createdBy is string && data.createdBy.size() >= 1 && data.createdBy.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp
+      );
+    }
+
+    function isValidOrder(data) {
+      return hasValidOrderKeys(data) &&
+        hasValidOrderOptionalFields(data) &&
+        hasValidOrderCoreSpecs(data) &&
+        hasValidOrderCoreStatus(data);
+    }
+
+    function isValidCalendarNote(data) {
+      return data.keys().hasAll([
+          'dateKey', 'title', 'content', 'category', 'authorUid', 'authorName', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'dateKey', 'title', 'content', 'category', 'authorUid', 'authorName', 'createdAt', 'updatedAt'
+        ]) &&
+        data.dateKey is string && data.dateKey.size() == 10 && data.dateKey.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 160 &&
+        data.content is string && data.content.size() <= 1500 &&
+        data.category in ['catatan', 'prioritas', 'libur'] &&
+        data.authorUid is string && data.authorUid.size() >= 1 && data.authorUid.size() <= 128 &&
+        data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 120 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidStringList(listVal) {
+      return listVal is list && listVal.size() <= 80 && (listVal.size() == 0 || listVal[0] is string);
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll([
+          'bahanList', 'kerahList', 'logoTimList', 'logoApparelList',
+          'sponsorDepanBelakangList', 'sponsorLenganList', 'logoJaketList', 'desainerList',
+          'warningDaysAfterLayout', 'urgentDaysBeforeDeadline', 'minEstWeeks', 'maxEstWeeks',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'paketSetelanList', 'paketAtasanList', 'paketCelanaList', 'paketJaketList',
+          'bahanList', 'bahanJaketList', 'kerahList', 'logoTimList', 'logoApparelList', 'nomorCelanaList',
+          'sponsorDepanBelakangList', 'sponsorLenganList', 'logoJaketList', 'desainerList',
+          'warningDaysAfterLayout', 'urgentDaysBeforeDeadline', 'minEstWeeks', 'maxEstWeeks',
+          'updatedAt'
+        ]) && (
+          (!('paketSetelanList' in data) || isValidStringList(data.paketSetelanList)) &&
+          (!('paketAtasanList' in data) || isValidStringList(data.paketAtasanList)) &&
+          (!('paketCelanaList' in data) || isValidStringList(data.paketCelanaList)) &&
+          (!('paketJaketList' in data) || isValidStringList(data.paketJaketList)) &&
+          (!('bahanJaketList' in data) || isValidStringList(data.bahanJaketList)) &&
+          (!('nomorCelanaList' in data) || isValidStringList(data.nomorCelanaList))
+        ) && (
+          isValidStringList(data.bahanList) &&
+          isValidStringList(data.kerahList) &&
+          isValidStringList(data.logoTimList) &&
+          isValidStringList(data.logoApparelList) &&
+          isValidStringList(data.sponsorDepanBelakangList) &&
+          isValidStringList(data.sponsorLenganList) &&
+          isValidStringList(data.logoJaketList) &&
+          isValidStringList(data.desainerList)
+        ) && (
+          data.warningDaysAfterLayout is number && data.warningDaysAfterLayout >= 1 && data.warningDaysAfterLayout <= 60 &&
+          data.urgentDaysBeforeDeadline is number && data.urgentDaysBeforeDeadline >= 0 && data.urgentDaysBeforeDeadline <= 30 &&
+          data.minEstWeeks is number && data.minEstWeeks >= 1 && data.minEstWeeks <= 12 &&
+          data.maxEstWeeks is number && data.maxEstWeeks >= 1 && data.maxEstWeeks <= 24 &&
+          data.updatedAt is timestamp
+        );
+    }
+
+    // Connection check doc
+    match /test/connection {
+      allow get: if isSignedIn();
+    }
+
+    // User email access registry
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isVerified() && isValidId(userId) && request.auth.uid == userId &&
+        isValidUser(request.resource.data) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.lastLoginAt == request.time &&
+        request.resource.data.status == 'active' &&
+        (
+          (request.auth.token.email == 'teamgsportsapparel@gmail.com' && request.resource.data.role in ['admin', 'staff']) ||
+          (request.auth.token.email != 'teamgsportsapparel@gmail.com' && request.resource.data.role == 'staff')
+        );
+      allow update: if isVerified() && isValidId(userId) && isValidUser(request.resource.data) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.email == resource.data.email &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        (
+          (
+            request.auth.uid == userId &&
+            resource.data.status == 'active' &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'lastLoginAt', 'provider']) &&
+            request.resource.data.role == resource.data.role &&
+            request.resource.data.status == resource.data.status &&
+            request.resource.data.lastLoginAt == request.time
+          ) ||
+          (
+            isAdmin() &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'role']) &&
+            (resource.data.email != 'teamgsportsapparel@gmail.com' || (request.resource.data.status == 'active' && request.resource.data.role == 'admin'))
+          )
+        );
+      allow delete: if false;
+    }
+
+    // Production Orders
+    match /orders/{orderId} {
+      allow get: if isActiveUser() && isValidId(orderId);
+      allow list: if isActiveUser();
+      allow create: if isActiveUser() && isValidId(orderId) &&
+        isValidOrder(request.resource.data) &&
+        request.resource.data.keys().hasAll(['paket', 'tglOrder', 'belumLayout', 'jenisNomorCelana', 'jmlNomorCelana', 'jenisLogoApparelCelana', 'jenisLogoTimCelana']) &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isActiveUser() && isValidId(orderId) &&
+        isValidOrder(request.resource.data) &&
+        request.resource.data.createdBy == resource.data.createdBy &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        (
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statusDesain', 'revisiKe', 'desainer', 'tglUpdateDesain', 'updatedAt']) ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statusPesanLogo', 'tglPesanLogo', 'updatedAt']) ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['statusProduksi', 'updatedAt']) ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalNominal', 'dpNominal', 'updatedAt']) ||
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'kategori', 'paket', 'namaCustomer', 'statusCustomer', 'noInvoice', 'belumInvoice',
+            'tglOrder', 'tglMasukLayout', 'belumLayout', 'tglEstimasiSelesai', 'qtyOrder',
+            'bahanAtasan', 'bahanCelana', 'jenisCelana', 'bahanJaket', 'kerah',
+            'jenisLogoTim', 'jmlLogoTim', 'jenisLogoTimCelana', 'jmlLogoTimCelana',
+            'jenisLogoApparel', 'jmlLogoApparel', 'jenisLogoApparelCelana', 'jmlLogoApparelCelana',
+            'jenisNomorCelana', 'jmlNomorCelana',
+            'jenisSponsorDepanBelakang', 'jmlSponsorDepanBelakang',
+            'jenisSponsorLengan', 'jmlSponsorLengan',
+            'jenisLogoJaket', 'jmlLogoJaket',
+            'pecahPola', 'jmlPecahPola', 'lisPiping', 'jmlLisPiping',
+            'pecahPolaCelana', 'jmlPecahPolaCelana', 'lisPipingCelana', 'jmlLisPipingCelana',
+            'statusPesanLogo', 'tglPesanLogo',
+            'statusDesain', 'revisiKe', 'desainer', 'tglUpdateDesain',
+            'statusProduksi', 'totalNominal', 'dpNominal', 'keteranganRequest',
+            'updatedAt'
+          ])
+        );
+      allow delete: if isActiveUser() && isValidId(orderId);
+    }
+
+    // Calendar Notes
+    match /calendarNotes/{noteId} {
+      allow get: if isActiveUser() && isValidId(noteId);
+      allow list: if isActiveUser();
+      allow create: if isActiveUser() && isValidId(noteId) &&
+        isValidCalendarNote(request.resource.data) &&
+        request.resource.data.authorUid == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isActiveUser() && isValidId(noteId) &&
+        isValidCalendarNote(request.resource.data) &&
+        request.resource.data.authorUid == resource.data.authorUid &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dateKey', 'title', 'content', 'category', 'updatedAt']);
+      allow delete: if isActiveUser() && isValidId(noteId);
+    }
+
+    // Master Settings
+    match /settings/{settingId} {
+      allow get: if isActiveUser() && settingId == 'masterData';
+      allow list: if false;
+      allow create: if isActiveUser() && settingId == 'masterData' &&
+        isValidSettings(request.resource.data) &&
+        request.resource.data.updatedAt == request.time;
+      allow update: if isActiveUser() && settingId == 'masterData' &&
+        isValidSettings(request.resource.data) &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'paketSetelanList', 'paketAtasanList', 'paketCelanaList', 'paketJaketList',
+          'bahanList', 'bahanJaketList', 'kerahList', 'logoTimList', 'logoApparelList', 'nomorCelanaList',
+          'sponsorDepanBelakangList', 'sponsorLenganList', 'logoJaketList', 'desainerList',
+          'warningDaysAfterLayout', 'urgentDaysBeforeDeadline', 'minEstWeeks', 'maxEstWeeks',
+          'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+  }
+}

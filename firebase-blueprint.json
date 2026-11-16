@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Registered user email account with role and active/disabled access status.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "minLength": 1, "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "email": { "type": "string", "minLength": 3, "maxLength": 254 },
+        "displayName": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "status": { "type": "string", "enum": ["active", "disabled"] },
+        "provider": { "type": "string", "maxLength": 40 },
+        "lastLoginAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "displayName", "role", "status", "provider", "lastLoginAt", "createdAt"]
+    },
+    "ProductionOrder": {
+      "title": "ProductionOrder",
+      "description": "Jersey production order across Setelan, Atasan, Celana, or Jaket divisions.",
+      "type": "object",
+      "properties": {
+        "kategori": { "type": "string", "enum": ["SETELAN", "ATASAN", "CELANA", "JAKET"] },
+        "paket": { "type": "string", "maxLength": 100 },
+        "namaCustomer": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "statusCustomer": { "type": "string", "enum": ["UTAMA", "TAMBAHAN"] },
+        "noInvoice": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "belumInvoice": { "type": "boolean" },
+        "tglOrder": { "type": "string", "maxLength": 20 },
+        "tglMasukLayout": { "type": "string", "maxLength": 20 },
+        "belumLayout": { "type": "boolean" },
+        "tglEstimasiSelesai": { "type": "string", "maxLength": 20 },
+        "qtyOrder": { "type": "number" },
+        "bahanAtasan": { "type": "string", "maxLength": 100 },
+        "bahanCelana": { "type": "string", "maxLength": 100 },
+        "jenisCelana": { "type": "string", "enum": ["", "CELANA PENDEK", "CELANA PANJANG"] },
+        "bahanJaket": { "type": "string", "maxLength": 100 },
+        "kerah": { "type": "string", "maxLength": 100 },
+        "jenisLogoTim": { "type": "string", "maxLength": 100 },
+        "jmlLogoTim": { "type": "number" },
+        "jenisLogoTimCelana": { "type": "string", "maxLength": 100 },
+        "jmlLogoTimCelana": { "type": "number" },
+        "jenisLogoApparel": { "type": "string", "maxLength": 100 },
+        "jmlLogoApparel": { "type": "number" },
+        "jenisLogoApparelCelana": { "type": "string", "maxLength": 100 },
+        "jmlLogoApparelCelana": { "type": "number" },
+        "jenisNomorCelana": { "type": "string", "maxLength": 100 },
+        "jmlNomorCelana": { "type": "number" },
+        "jenisSponsorDepanBelakang": { "type": "string", "maxLength": 120 },
+        "jmlSponsorDepanBelakang": { "type": "number" },
+        "jenisSponsorLengan": { "type": "string", "maxLength": 120 },
+        "jmlSponsorLengan": { "type": "number" },
+        "jenisLogoJaket": { "type": "string", "maxLength": 100 },
+        "jmlLogoJaket": { "type": "number" },
+        "pecahPola": { "type": "string", "enum": ["ADA", "TIDAK"] },
+        "jmlPecahPola": { "type": "number" },
+        "lisPiping": { "type": "string", "enum": ["ADA", "TIDAK"] },
+        "jmlLisPiping": { "type": "number" },
+        "pecahPolaCelana": { "type": "string", "enum": ["ADA", "TIDAK"] },
+        "jmlPecahPolaCelana": { "type": "number" },
+        "lisPipingCelana": { "type": "string", "enum": ["ADA", "TIDAK"] },
+        "jmlLisPipingCelana": { "type": "number" },
+        "statusPesanLogo": { "type": "string", "enum": ["BELUM", "SUDAH"] },
+        "tglPesanLogo": { "type": "string", "maxLength": 20 },
+        "statusDesain": { "type": "string", "enum": ["BELUM DESAIN", "PROSES DESAIN", "REVISI", "DESAIN ACC"] },
+        "revisiKe": { "type": "number" },
+        "desainer": { "type": "string", "maxLength": 100 },
+        "tglUpdateDesain": { "type": "string", "maxLength": 20 },
+        "statusProduksi": { "type": "string", "enum": ["ANTRIAN", "PROSES PRODUKSI", "SUDAH SELESAI"] },
+        "totalNominal": { "type": "number" },
+        "dpNominal": { "type": "number" },
+        "keteranganRequest": { "type": "string", "maxLength": 2000 },
+        "createdBy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "kategori", "paket", "namaCustomer", "statusCustomer", "noInvoice",
+        "tglOrder", "tglMasukLayout", "belumLayout", "tglEstimasiSelesai", "qtyOrder",
+        "bahanAtasan", "bahanCelana", "bahanJaket", "kerah",
+        "jenisLogoTim", "jmlLogoTim", "jenisLogoTimCelana", "jmlLogoTimCelana",
+        "jenisLogoApparel", "jmlLogoApparel", "jenisLogoApparelCelana", "jmlLogoApparelCelana",
+        "jenisNomorCelana", "jmlNomorCelana",
+        "jenisSponsorDepanBelakang", "jmlSponsorDepanBelakang",
+        "jenisSponsorLengan", "jmlSponsorLengan",
+        "jenisLogoJaket", "jmlLogoJaket",
+        "statusPesanLogo", "tglPesanLogo",
+        "statusDesain", "revisiKe", "desainer", "tglUpdateDesain",
+        "statusProduksi", "totalNominal", "dpNominal", "keteranganRequest",
+        "createdBy", "createdAt", "updatedAt"
+      ]
+    },
+    "CalendarNote": {
+      "title": "CalendarNote",
+      "description": "Production schedule note attached to a specific calendar date.",
+      "type": "object",
+      "properties": {
+        "dateKey": { "type": "string", "minLength": 10, "maxLength": 10, "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "content": { "type": "string", "maxLength": 1500 },
+        "category": { "type": "string", "enum": ["catatan", "prioritas", "libur"] },
+        "authorUid": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "authorName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["dateKey", "title", "content", "category", "authorUid", "authorName", "createdAt", "updatedAt"]
+    },
+    "MasterSettings": {
+      "title": "MasterSettings",
+      "description": "Configurable dropdown options for materials, collars, packages, logos, sponsors, designers, and schedule thresholds.",
+      "type": "object",
+      "properties": {
+        "paketSetelanList": { "type": "array" },
+        "paketAtasanList": { "type": "array" },
+        "paketCelanaList": { "type": "array" },
+        "paketJaketList": { "type": "array" },
+        "bahanList": { "type": "array" },
+        "bahanJaketList": { "type": "array" },
+        "kerahList": { "type": "array" },
+        "logoTimList": { "type": "array" },
+        "logoApparelList": { "type": "array" },
+        "nomorCelanaList": { "type": "array" },
+        "sponsorDepanBelakangList": { "type": "array" },
+        "sponsorLenganList": { "type": "array" },
+        "logoJaketList": { "type": "array" },
+        "desainerList": { "type": "array" },
+        "warningDaysAfterLayout": { "type": "number" },
+        "urgentDaysBeforeDeadline": { "type": "number" },
+        "minEstWeeks": { "type": "number" },
+        "maxEstWeeks": { "type": "number" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "paketSetelanList", "paketAtasanList", "paketCelanaList", "paketJaketList",
+        "bahanList", "bahanJaketList", "kerahList", "logoTimList", "logoApparelList", "nomorCelanaList",
+        "sponsorDepanBelakangList", "sponsorLenganList", "logoJaketList", "desainerList",
+        "warningDaysAfterLayout", "urgentDaysBeforeDeadline", "minEstWeeks", "maxEstWeeks",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Registered team member email accounts and active/disabled access control."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/ProductionOrder" },
+      "description": "Jersey production orders across Admin, Design, Logo Ordering, Billing, and Schedule tracking."
+    },
+    "/calendarNotes/{noteId}": {
+      "schema": { "$ref": "#/entities/CalendarNote" },
+      "description": "Daily production calendar notes and reminders."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/MasterSettings" },
+      "description": "Centralized apparel specifications and schedule threshold configuration (masterData)."
+    }
+  }
+}

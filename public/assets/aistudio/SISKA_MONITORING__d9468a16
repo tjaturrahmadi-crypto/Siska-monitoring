@@ -1,0 +1,36 @@
+TRACKING JADWAL & REMINDER  |  Divisi Administrasi  x  Divisi Desain,,
+,,
+,ALUR KERJA,
+,1. Admin input order,"Isi sheet ADM_SETELAN / ADM_ATASAN / ADM_JAKET (kapasitas 300 customer per sheet). Semua pilihan lewat dropdown, semua tanggal lewat kalender (klik 2x sel tanggal). Yang diketik hanya: nama, invoice, keterangan request, nominal (DP/total), no. WA."
+,2. Desain update status,"Sheet DESAIN otomatis memuat semua order dari ketiga sheet admin (ID SET-/ATS-/JKT-). Desainer cukup klik STATUS DESAIN (BELUM DESAIN / PROSES DESAIN / REVISI / DESAIN ACC), REVISI KE- (1-10), DESAINER, dan tanggal."
+,3. Status sinkron,Kolom STATUS DESAIN di sheet admin otomatis mengikuti sheet DESAIN. Kolom STATUS JADWAL & SISA HARI otomatis dari tanggal estimasi + status produksi.
+,Form klik (lebih ringkas),"Menu Reminder > Form Input Order / Desain: isi order baru, ubah order (pilih NO), atau update status desain lewat form dropdown & kalender, tanpa menggulir kolom. Perlu script (lihat bagian Notifikasi)."
+,Filter dashboard,"Baris kuning di REKAP, PENAGIHAN, KETERLAMBATAN: pilih JENIS / STATUS lewat dropdown, atau ketik sebagian nama/invoice di kotak CARI. Daftar langsung memendek. Menu Reminder > Reset semua filter untuk kembali ke SEMUA."
+,4. Dashboard,"PENAGIHAN (pelunasan, diurut tanggal estimasi selesai), KETERLAMBATAN (diurut paling telat), REKAP (semua order: desain - produksi - telat - tagih), PREVIEW_TIM (kartu A4 per customer: pilih NAMA CUSTOMER, semua invoice atas nama itu tampil, lalu pilih invoice untuk detail). Semua langsung terlihat otomatis."
+,"Customer sama, invoice baru",Tambah pesanan baru untuk customer yang sama = isi baris baru (di sheet jenis yang sesuai) dengan NAMA CUSTOMER yang sama (pilih dari dropdown) dan NO. INVOICE berbeda. Invoice kembar dalam satu sheet ditandai merah muda.
+,Jumlah PCS,"Setelah LOGO TIM, LOGO APPAREL, SPONSOR DEPAN/BELAKANG, dan SPONSOR LENGAN ada kolom JML (PCS): klik dropdown 1-100. Jika logo/sponsor yang dipilih PRINTING (atau TANPA SPONSOR), jumlah pcs tidak perlu diisi: kolom jadi abu-abu dan, dengan script terpasang, isinya otomatis terhapus."
+,ATURAN STATUS JADWAL,
+,SELESAI,STATUS PRODUKSI = SELESAI.
+,TERLAMBAT,Hari ini sudah lewat Tgl Estimasi Selesai dan produksi belum SELESAI.
+,PERINGATAN,Sudah lewat 13 hari (bisa diatur) sejak Tgl Masuk Layout dan belum SELESAI -> notifikasi keterlambatan awal.
+,SEGERA,Tinggal H-1 (bisa diatur) sebelum Tgl Estimasi Selesai.
+,ON TRACK / LENGKAPI TANGGAL,Aman / Tgl Layout atau Estimasi belum diisi.
+,Sel estimasi ORANYE,Jarak Layout -> Estimasi di luar 2-3 minggu (rentang bisa diatur di PENGATURAN).
+,PENCETAKAN,"Semua sheet sudah portrait. ADM_SETELAN & DESAIN diset A3 (kolom banyak); sheet lain A4. Kartu PREVIEW_TIM = 1 halaman A4. Untuk dashboard (1200 baris), gunakan Filter lalu print 'Selected cells' agar tidak mencetak baris kosong."
+,NOTIFIKASI GOOGLE KALENDER & WHATSAPP,
+,Copy Info Order,"Di PREVIEW_TIM pilih NAMA CUSTOMER (+ invoice). Teks siap-paste (Keterangan - nama tim & invoice, paket, spesifikasi dengan format 'label : isi', dan REQUEST DESAIN dengan jeda satu baris antar kalimat) tersusun otomatis di kotak hijau baris 52+. Pasang sekali: menu Reminder > Pasang tombol COPY (setujui izin) -> muncul kotak centang di PREVIEW_TIM. Setelahnya cukup klik kotak centang -> jendela terbuka -> klik COPY -> paste (Ctrl+V) di WhatsApp/tempat lain. Alternatif tanpa pasang: menu Reminder > Copy Info Order."
+,Pasang script,"Upload file ini ke Google Drive -> buka dengan Google Sheets -> Ekstensi > Apps Script -> hapus isi, tempel isi file Code.gs; klik + > HTML, beri nama Form, tempel isi Form.html -> Simpan -> muat ulang Sheet. Muncul menu 'Reminder'."
+,Kalender,Menu Reminder > Sinkron ke Google Kalender: membuat event 'SELESAI PRODUKSI' di Tgl Estimasi (pop-up H-3 & H-1) dan event 'CEK KETERLAMBATAN' di hari ke-13 sejak Tgl Layout. Notifikasi dikirim Google Kalender ke HP/email Anda.
+,WhatsApp,"Isi no. WA di PENGATURAN, lalu menu Reminder > Set Token WhatsApp (butuh layanan WA gateway, mis. Fonnte - berbayar/ada paket gratis terbatas). Script mengirim digest harian: terlambat, peringatan, segera, dan tagihan jatuh tempo."
+,Otomatis harian,Menu Reminder > Aktifkan jadwal otomatis harian (jam diatur di PENGATURAN). Sheet kalender & WA berjalan sendiri tanpa dibuka.
+,CONTOH DATA,
+,Baris contoh,Baris No.1 di tiap sheet admin (termasuk ADM_CELANA) dan baris No.2 di ADM_JAKET (diawali 'CONTOH -') dan 3 status di sheet DESAIN adalah contoh. Hapus isinya (pilih sel > Delete) sebelum dipakai sungguhan.
+,Jangan diubah,Sheet DATA (tersembunyi) dan kolom abu-abu/auto berisi rumus. Isi sel berwarna putih / kuning saja.
+,,
+,PESAN LOGO,
+,Isi sheet,"PESAN LOGO (setelah DESAIN) = preview otomatis kebutuhan logo dari ADM_SETELAN, ADM_ATASAN, ADM_CELANA, ADM_JAKET. Setelan: jumlah logo atasan & celana dipisah. Logo/sponsor PRINTING hanya tampil 'PRINTING' tanpa jumlah. Tim baru langsung muncul sendiri, tanpa Reapply."
+,Klik manual,"Isi STATUS PEMESANAN LOGO (BELUM/SUDAH) & TANGGAL PEMESANAN LOGO di kolom paling kanan tiap sheet ADM (SETELAN: AO-AP, ATASAN: AF-AG, CELANA: AA-AB, JAKET: R-S). Kosong dianggap BELUM. Khusus JAKET isi juga LOGO JAKET & JML (T-U) karena sebelumnya belum ada kolom logo jaket."
+,Filter,"Baris kuning di PESAN LOGO (gaya REKAP): JENIS, PEMESANAN (SEMUA/BELUM/SUDAH), dan kotak CARI nama/invoice. Daftar langsung memendek; kembalikan ke SEMUA / kosongkan CARI untuk reset."
+,,
+,UTAMA / TAMBAHAN,
+,Fungsi kolom,"Kolom C di semua sheet ADM (setelah NAMA CUSTOMER). Pilih UTAMA bila order dari customer baru / order pertama. Pilih TAMBAHAN bila customer sudah pernah order dan ini order lanjutan. UTAMA = biru, TAMBAHAN = kuning. Kolom ini juga tampil otomatis (setelah NAMA CUSTOMER) di DESAIN, REKAP, PENAGIHAN, KETERLAMBATAN, dan PESAN LOGO; di PREVIEW_TIM tampil pada daftar invoice, judul detail, dan teks siap copy."

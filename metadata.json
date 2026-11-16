@@ -1,0 +1,6 @@
+{
+  "name": "SISKA Monitoring",
+  "description": "Aplikasi tracking jadwal produksi jersey, divisi desain, pemesanan logo, kalender produksi, dan kontrol akses email.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
